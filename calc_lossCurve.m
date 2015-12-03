@@ -1,4 +1,4 @@
-function [EL, P, bldgEL, floorEL, compEL, im_ofint, IM] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, RIDR_HC)
+function [EL, P, bldgEL, floorEL, compEL, im_ofint, IM] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, cqty, dqty, dfrag)
 
 %% Collapse Case
 
@@ -20,9 +20,6 @@ dfrag{1}.beta = 0.3;
 dfrag{1}.ctheta = EC.D;
 dfrag{1}.cbeta = 1e-10;
 dfrag{1}.nds = 1;
-dqty = zeros(1, nEDP);
-dqty(10:end) = 1;
-dqty = dqty';
 
 % Initialization
 dbldgEL = NaN(n, 1);
@@ -55,16 +52,6 @@ P.D = (pd).*(1-P.C);
 EL.D = P.D*EC.D;
 
 %% Non-collapse Case
-% Choosing range of IM
-% n = 200;
-% im_ofint = linspace(1e-5,max(imval)*2,n);
-
-% Simplification - Assume one unit of each PG on each floor
-cqty = zeros(2, nEDP);
-cqty(1, 1:4) = 1; % IDR Structural
-cqty(2, 1:4) = 1; % IDR Non-Structural
-% cqty(3, 5:9) = 1; % PFA Non-Structural
-cqty = transpose(cqty);
 
 % Initialization
 bldgEL = NaN(n, 1);
