@@ -14,13 +14,6 @@ P.NC = 1 - P.C;
 
 %% Demolition Case
 
-% Assumed demolition fragility (lognormal)
-dfrag{1}.theta = 0.015;
-dfrag{1}.beta = 0.3;
-dfrag{1}.ctheta = EC.D;
-dfrag{1}.cbeta = 1e-10;
-dfrag{1}.nds = 1;
-
 % Initialization
 dbldgEL = NaN(n, 1);
 dfloorEL = NaN(nEDP,n);
@@ -41,10 +34,11 @@ for i = 1:n
     [thetaPoint, betaPoint] = calc_edpParam(stripeDat, imval, im, nEDP);
     edp = [thetaPoint'; betaPoint'];
     [bldgEL_im, floorEL_im, ~, ~, ~, p_fordemo] = calc_lossIntensity(edp, dfrag, dqty, n);
+    
     dbldgEL(i) = bldgEL_im;
     dfloorEL(:,i) = floorEL_im;
     % Calculating total probability of demolition (given no collapse)
-    pd(i) = nanmax(sum(p_fordemo,1))*pIMdiff(i)*dIM; % Assume max pd across all floors is p(D|IM,NC)
+    pd(i) = nanmax(p_fordemo,[],2); % Assume max pd across all floors is p(D|IM,NC)
 end
 
 % Calculating expected loss for each IM given NC for R

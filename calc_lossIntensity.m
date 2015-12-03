@@ -32,7 +32,7 @@ qtyEL_im = NaN(n-1,nstory);
 cEL_im = NaN(n-1,nstory);
 compEL_im = NaN(n-1, nstory, ncomp);
 floorEL_im = NaN(nstory,1);
-p_fordemo = NaN(n-1, nstory);
+p_fordemo = NaN(1, nstory);
 
 
 % Calculating loss for each component
@@ -63,7 +63,7 @@ for i = 1:nstory
     % Multiplying loss by probability of seeing that edp
     cEL_im(:,i) = qtyEL_im(:,i).*pEDP_im(:,i);
     % Calculating probability for demolition
-    p_fordemo(:,i) = pDS_edp_im{1}(:,1,i).*cEDP_im(:,i);
+    p_fordemo(i) = sum(repmat(cqty(i,1),n-1,1).*pDS_edp_im{1}(:,1,i).*pEDP_im(:,i),1);
     % Summing expected losses for all floors
     floorEL_im(i) = sum(cEL_im(:,i));
 end

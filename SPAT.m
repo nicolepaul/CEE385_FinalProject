@@ -1706,6 +1706,7 @@ fig_hdl = handles.mainfigure;
         dfrag{1}.beta = str2double(get(handles.demobeta,'str'));
         dfrag{1}.ctheta = EC.D;
         dfrag{1}.cbeta = 1e-10;
+        dfrag{1}.nds = 1;
         
         % Store information
         [EL, P, bldgEL_im, floorEL_im, compEL_im, IM] = calc_lossCurve(handles.fragDat, handles.imval, handles.stripeDat, nedps, nfloors, handles.pcoeff, EC, handles.cqty', handles.dqty', dfrag);
