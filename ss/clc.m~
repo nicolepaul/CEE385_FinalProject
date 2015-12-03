@@ -1,0 +1,25 @@
+function [compnames, compedp, fragDat] = get_fragilityLoss(nfragility, nds, fragfile)
+
+% Import fragility csv
+nparam = 2; % central value and uncertainty value
+ninfo = 2; % damage and loss
+fid = fopen(fragfile);
+textdat = textscan(fid, '%s', 'Delimiter', ',');
+numdat = dlmread(fid, ',', [1 2 nfragility 2+nds*nparam*ninfo]);
+fclose('all');
+
+% Arranging text into output format
+compnames = textdat{1,1};
+compedp = textdat{1,2};
+
+% Looping through fragility info
+fragDat = cell(nfragility,1);
+inds_theta = 1:2:nds*2;
+inds_beta = 1:2:nds*2;
+inds_ctheta = nds*nparam:2:nds*nparam;
+inds_cbeta = 1:2:nds*2;
+for i = 1:nfragility
+    fragDat{i}.theta = 
+
+
+end
