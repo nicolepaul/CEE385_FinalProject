@@ -50,7 +50,7 @@ EL.D = P.D*EC.D;
 % Initialization
 bldgEL = NaN(n, 1);
 floorEL = NaN(nEDP,n);
-compEL = NaN(n-1,nEDP,numel(frag),n);
+compEL = NaN(nEDP,numel(frag),n);
 
 % Looping over all im requested
 for i = 1:n
@@ -58,7 +58,7 @@ for i = 1:n
     [bldgEL_im, floorEL_im, compEL_im] = calc_lossIntensity(edp, frag, cqty, n);
     bldgEL(i) = bldgEL_im;
     floorEL(:,i) = floorEL_im;
-    compEL(:,:,:,i) = compEL_im;
+    compEL(:,:,i) = compEL_im;
 end
 
 % Calculating expected loss for each IM given NC for R

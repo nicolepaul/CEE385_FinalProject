@@ -1,4 +1,4 @@
-function [bldgEL_im, floorEL_im, compEL_im, pDS_edp_im, midedp_im, p_fordemo] = calc_lossIntensity(edp, frag, cqty, n)
+function [bldgEL_im, floorEL_im, compqEL_im, pDS_edp_im, midedp_im, p_fordemo] = calc_lossIntensity(edp, frag, cqty, n)
 % GET_EXPLOSSNC
 % Calculates expected loss in building for a given IM level
 %
@@ -31,6 +31,7 @@ cEDP_im = NaN(n-1,nstory);
 qtyEL_im = NaN(n-1,nstory);
 cEL_im = NaN(n-1,nstory);
 compEL_im = NaN(n-1, nstory, ncomp);
+compqEL_im = NaN(nstory, ncomp);
 floorEL_im = NaN(nstory,1);
 p_fordemo = NaN(1, nstory);
 
@@ -57,6 +58,7 @@ for i = 1:nstory
         end
         % Multiplying probability of each damage state by expected loss
         compEL_im(:,i,j) = sum(repmat(frag{j}.ctheta,n-1,1).*pDS_edp_im{j}(:,:,i),2);
+        compqEL_im(i,j) = sum(compEL_im(:,i,j)*cqty(i,j),1);
     end
     % Multiplying component loss by quantity at that floor
     qtyEL_im(:,i) = sum(squeeze(compEL_im(:,i,:)).*repmat(cqty(i,:),n-1,1),2);
