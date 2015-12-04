@@ -2387,7 +2387,7 @@ fig_hdl = handles.mainfigure;
         elseif piecat == 2 % Performance group
             vals = squeeze(sum(handles.compEL,1))';
             names = handles.compnames';
-            ccase = ', NC';
+            ccase = ', NC, R';
             % Add placeholder is one performance group is all zeros
             for k = 1:size(vals,2)
                 if ~any(vals(:,k))
@@ -2407,7 +2407,7 @@ fig_hdl = handles.mainfigure;
                     vals = vals + [zeros(size(vals,1),1) handles.floorEL(edp_inds==1,:)'];
                 end
             end
-            ccase = ', NC';
+            ccase = ', NC, R';
             % Add placeholder is one floor is all zeros
             for k = 1:size(vals,2)
                 if ~any(vals(:,k))
@@ -2426,7 +2426,7 @@ fig_hdl = handles.mainfigure;
                 vals(:,i) = edp_chosen;
             end
             names = handles.uniqedp;
-            ccase = ', NC';
+            ccase = ', NC, R';
             % Add placeholder is one edp is all zeros
             for k = 1:size(vals,2)
                 if ~any(vals(:,k))
