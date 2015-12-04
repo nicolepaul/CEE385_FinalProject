@@ -1,3 +1,3 @@
 # CEE385_FinalProject
 # Main GUI:  SPAT
-# to be updated soon
+# Refer to the "Documents" directory for the user manual and report

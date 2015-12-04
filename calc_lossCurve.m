@@ -1,4 +1,4 @@
-function [EL, P, bldgEL, floorEL, compEL, im_ofint, IM, AAL] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, cqty, dqty, dfrag)
+function [EL, P, bldgEL, floorEL, compEL, pIMdiff, IM, AAL] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, cqty, dqty, dfrag)
 
 %% Collapse Case
 

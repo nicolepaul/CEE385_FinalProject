@@ -1972,7 +1972,7 @@ fig_hdl = handles.mainfigure;
         dfrag{1}.nds = 1;
         
         % Store information
-        [EL, P, bldgEL, floorEL, compEL, im_ofint, IM, AAL] = calc_lossCurve(handles.fragDat, handles.imval, handles.stripeDat, nedps, nfloors, handles.pcoeff, EC, handles.cqty', handles.dqty', dfrag);
+        [EL, P, bldgEL, floorEL, compEL, pIMdiff, IM, AAL] = calc_lossCurve(handles.fragDat, handles.imval, handles.stripeDat, nedps, nfloors, handles.pcoeff, EC, handles.cqty', handles.dqty', dfrag);
         handles.EL = EL;
         handles.P = P;
         handles.bldgEL = bldgEL;
@@ -1980,6 +1980,7 @@ fig_hdl = handles.mainfigure;
         handles.compEL = compEL;
         handles.IM = IM;
         handles.AAL = AAL;
+        handles.pIMdiff = pIMdiff;
         
         
         % Setting results strings
@@ -1995,7 +1996,7 @@ fig_hdl = handles.mainfigure;
         cla(h,'reset');
         plot(h,IM, [EL.R EL.D EL.C EL.T], 'LineWidth', 1.2);
         legend(h,'R','D','C', 'T','Location','best');
-        xlim(h,[0 max(im_ofint)]);
+        xlim(h,[0 max(IM)]);
         ylabel(h,'E[L_i|IM]'); xlabel(h,'IM');
         title(h,'Expected Loss Due to Each Case');
         if handles.gridon
@@ -2373,7 +2374,7 @@ fig_hdl = handles.mainfigure;
         nedpuniq = numel(handles.uniqedp);
         
         if piecat == 1 % Case (Repair, demolition, collapse)
-            vals = [handles.EL.R handles.EL.D handles.EL.C];
+            vals = [handles.EL.R handles.EL.D handles.EL.C].*repmat(handles.pIMdiff,1,3);
             names = {'Repair','Demolition','Collapse'};
             ccase = '';
             % Add placeholder is one case is all zeros
