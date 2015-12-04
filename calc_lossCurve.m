@@ -1,4 +1,4 @@
-function [EL, P, bldgEL, floorEL, compEL, im_ofint, IM] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, cqty, dqty, dfrag)
+function [EL, P, bldgEL, floorEL, compEL, im_ofint, IM, AAL] = calc_lossCurve(frag, imval, stripeDat, nEDP, nfloors, pcoeff, EC, cqty, dqty, dfrag)
 
 %% Collapse Case
 
@@ -21,20 +21,20 @@ pd = NaN(n,1);
 
 % Deaggregation curve of p(D)
 pIMdiff = NaN(n,1);
-dIM = im_ofint(2) - im_ofint(1);
 for i = 1:n-1
     lnx = log(im_ofint(i));
     p = fliplr(pcoeff);
     pIMdiff(i) = abs(((p(2)+2*p(3)*lnx+3*p(4)*lnx^2+4*p(5)*lnx^3)/im_ofint(i))*exp(p(1)+p(2)*lnx+p(3)*lnx^2+p(4)*lnx^3+p(5)*lnx^4));
 end
 
+% Getting median and dispersion values of EDPs
+[thetaPoint, betaPoint] = calc_edpParam(stripeDat, imval, im_ofint, nEDP);
+
+
 % Looping over all im requested
 for i = 1:n
-    im = im_ofint(i);
-    [thetaPoint, betaPoint] = calc_edpParam(stripeDat, imval, im, nEDP);
-    edp = [thetaPoint'; betaPoint'];
+    edp = [thetaPoint(:,i)'; betaPoint(:,i)'];
     [bldgEL_im, floorEL_im, ~, ~, ~, p_fordemo] = calc_lossIntensity(edp, dfrag, dqty, n);
-    
     dbldgEL(i) = bldgEL_im;
     dfloorEL(:,i) = floorEL_im;
     % Calculating total probability of demolition (given no collapse)
@@ -54,9 +54,7 @@ compEL = NaN(n-1,nEDP,numel(frag),n);
 
 % Looping over all im requested
 for i = 1:n
-    im = im_ofint(i);
-    [thetaPoint, betaPoint] = calc_edpParam(stripeDat, imval, im, nEDP);
-    edp = [thetaPoint'; betaPoint'];
+    edp = [thetaPoint(:,i)'; betaPoint(:,i)'];
     [bldgEL_im, floorEL_im, compEL_im] = calc_lossIntensity(edp, frag, cqty, n);
     bldgEL(i) = bldgEL_im;
     floorEL(:,i) = floorEL_im;
@@ -72,7 +70,7 @@ P.R = P.NC - P.D;
 
 EL.T = EL.D + EL.C + EL.R;
 P.T = P.D + P.C + P.R;
-
+%%
 figure;
 subplot(2,2,1);
 plot(im_ofint, [EL.R EL.D EL.C EL.T], 'LineWidth', 1.2);
@@ -111,6 +109,10 @@ plot(im_ofint, [EL.R EL.D EL.C  EL.T].*repmat(pIMdiff,1,4), 'Linewidth', 1.2); g
 legend('R','D','C','T','Location','best');
 xlabel('IM'); ylabel('Deaggregation of Expected Loss');
 
+
+%%
+% Display AAL results
+
 xval = im_ofint;
 yval = [EL.R EL.D EL.C  EL.T].*repmat(pIMdiff,1,4);
 for i = 1
@@ -118,10 +120,16 @@ for i = 1
     xval(indsnan,:) = [];
     yval(indsnan,:) = [];
 end
-disp('Unadjusted MAF')
-trapz(xval, yval)
-disp('Adjusted MAF')
-trapz(xval,yval)./trapz(xval(:,end),yval(:,end))
+
+
+disp('AAL for each Case (R, D, C, T)');
+format bank;
+AAL.val = trapz(xval, yval);
+disp(AAL.val);
+disp('AAL for each Case % of Total');
+format short;
+AAL.perc = trapz(xval,yval)./trapz(xval(:,end),yval(:,end));
+disp(AAL.perc);
 
 IM = im_ofint;
 end

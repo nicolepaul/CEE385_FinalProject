@@ -2,7 +2,7 @@
 function [IM, pCIM, deagg, fittedFC, MAF, pc50] = get_collapseRisk(pcoeff, imval, stripeDat, fittype, nGM)
 
 % Calculation will be done with below range of IM values
-m = 500;
+m = 250;
 im = linspace(1e-5, max(imval)*1.5, m)'; % Full range
 IM = (im(2:end)+im(1:end-1))/2; % At midpoints
 
