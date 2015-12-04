@@ -25,6 +25,16 @@ fig_hdl = handles.mainfigure;
         ppinv = [1*xmult 1*ymult 1*xmult 1*ymult];
         handles.ppinv = ppinv;
         
+        % Colors for pie charts
+        handles.mycolors = [     0    0.4470    0.7410
+                            0.8500    0.3250    0.0980
+                            0.9290    0.6940    0.1250
+                            0.4940    0.1840    0.5560
+                            0.4660    0.6740    0.1880
+                            0.3010    0.7450    0.9330
+                            0.6350    0.0780    0.1840];
+        handles.mycolors = [handles.mycolors; handles.mycolors*0.25; handles.mycolors*0.75; handles.mycolors*.5];
+        
         % Initialization
         handles.edptext = {''};
         handles.compnames = {''};
@@ -1944,7 +1954,7 @@ fig_hdl = handles.mainfigure;
         set(handles.outloss7,'str',AALp_str);
         set(handles.outloss5,'str',sprintf('AAL: %10.2f', AAL.val(end)));
         
-        % Plotting damage functions in main axes
+        % Plotting E[L_i|IM] in main axes
         set(handles.MAINAXES5, 'Visible', 'on');
         h = handles.MAINAXES5;
         cla(h,'reset');
@@ -1957,23 +1967,20 @@ fig_hdl = handles.mainfigure;
             grid(h, 'on');
         end
         
-%         
-%         % Plotting loss functions in small axes
-%         set(handles.SMALLAXES4, 'Visible', 'on');
-%         h = handles.SMALLAXES4;
-%         cla(h,'reset');
-%         hold(h, 'all');
-%         for i = 1:nds
-%             plot(h, fragDat{1}.c(:,i), fragDat{1}.p, 'LineWidth', 1.2, 'DisplayName', strcat('DS',num2str(i)));
-%         end
-%         hold(h, 'off');
-%         legend(h, '-dynamicLegend', 'Location', 'best');
-%         title(h, [compnames{1} ': Loss Curves']);
-%         xlabel(h, 'Loss');
-%         ylabel(h, 'P(Loss|DM)');
-%         if handles.gridon
-%             grid(h, 'on');
-%         end
+        % Plotting pie chart for AAL in small axes
+        set(handles.SMALLAXES5, 'Visible', 'on');
+        h = handles.SMALLAXES5;
+        cla(h,'reset');
+        pie(h, AAL.val(1:3));
+        legend(h, 'Repair','Demolition','Collapse', 'Location', 'EastOutside', 'Orientation', 'Vertical');
+        title(h, 'Average Annual Loss');
+        hp = findobj(h, 'Type', 'patch');
+        for i = 1:numel(hp)
+            set(hp(end-i+1), 'FaceColor', handles.mycolors(i,:));
+        end
+        set(h,'xtick',[])
+        set(h,'ytick',[])
+        
         % Saving results
         save RESULTS;
     end
