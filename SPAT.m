@@ -27,13 +27,14 @@ fig_hdl = handles.mainfigure;
         
         % Colors for pie charts
         handles.mycolors = [     0    0.4470    0.7410
-                            0.8500    0.3250    0.0980
-                            0.9290    0.6940    0.1250
-                            0.4940    0.1840    0.5560
-                            0.4660    0.6740    0.1880
-                            0.3010    0.7450    0.9330
-                            0.6350    0.0780    0.1840];
+            0.8500    0.3250    0.0980
+            0.9290    0.6940    0.1250
+            0.4940    0.1840    0.5560
+            0.4660    0.6740    0.1880
+            0.3010    0.7450    0.9330
+            0.6350    0.0780    0.1840];
         handles.mycolors = [handles.mycolors; handles.mycolors*0.25; handles.mycolors*0.75; handles.mycolors*.5];
+        handles.mycolors = repmat(handles.mycolors,50,1);
         
         % Initialization
         handles.edptext = {''};
@@ -1034,7 +1035,7 @@ fig_hdl = handles.mainfigure;
             'BackgroundColor', [1 1 1], ...
             'String', 'LOSS OUTPUTS:', ...
             'HorizontalAlignment', 'left');
-                
+        
         handles.outputheader4 = uicontrol( ...
             'Parent', handles.OUTPUTS4, ...
             'Tag', 'outputheader4', ...
@@ -1200,7 +1201,7 @@ fig_hdl = handles.mainfigure;
             'BackgroundColor', [1 1 1], ...
             'String', 'Update Hazard', ...
             'Callback', @updatehazard_Callback);
-
+        
         
         % --- CHECKBOXES -------------------------------------
         handles.gridon = uicontrol( ...
@@ -1266,7 +1267,8 @@ fig_hdl = handles.mainfigure;
             'FontSize', 10, ...
             'Value', 1, ...
             'BackgroundColor', [1 1 1], ...
-            'String', {'AAL','E[L|IM]'});
+            'String', {'AAL','E[L|IM]'}, ...
+            'Callback', @pickpiecat_Callback);
         
         handles.pickpiecat = uicontrol( ...
             'Parent', handles.PLOTOPTIONS5, ...
@@ -1380,7 +1382,7 @@ fig_hdl = handles.mainfigure;
         
         handles.demotheta = uicontrol( ...
             'Parent', handles.OUTPUTS4, ...
-            'Tag', 'demotheta', ...
+            'Tag', 'demothpeta', ...
             'Style', 'edit', ...
             'Units', 'characters', ...
             'Position', ppinv.*[13 12.75 10 1.5], ...
@@ -2210,7 +2212,7 @@ fig_hdl = handles.mainfigure;
             handles.midedp_im = midedp_im;
         end
         
-         % Getting EDP and floor information
+        % Getting EDP and floor information
         val = get(handles.pickedp, 'Value');
         indplot = cell2mat(handles.uniqedp_vals{val});
         indplot = find(indplot==1);
@@ -2302,7 +2304,7 @@ fig_hdl = handles.mainfigure;
 
 %% ---------------------------------------------------------------------------
     function setquantity_Callback(hObject,evendata) %#ok<INUSD>
- 
+        
         handles.cqty = get(handles.t,'Data');
         close(handles.f);
         
@@ -2344,7 +2346,7 @@ fig_hdl = handles.mainfigure;
         % Accessing loss data
         im = handles.IM;
         el = [handles.EL.R handles.EL.D handles.EL.C handles.EL.T];
-
+        
         % Interpolating to get expected loss at requested IM value
         el_interp = exp(interp1(log(im),log(el),log(imloss)));
         
@@ -2360,9 +2362,80 @@ fig_hdl = handles.mainfigure;
 %% ---------------------------------------------------------------------------
     function pickpiecat_Callback(hObject,evendata) %#ok<INUSD>
         
+        % Getting dropdown values
         pietype = get(handles.pickpietype, 'Value');
         piecat = get(handles.pickpiecat, 'Value');
         
+        % Accessing stored values
+        im = handles.IM;
+        % Getting number of edp values and floors
+        nfloors = str2double(get(handles.nfloors, 'str'));
+        nedpuniq = numel(handles.uniqedp);
+        
+        if piecat == 1 % Case (Repair, demolition, collapse)
+            vals = [handles.EL.R handles.EL.D handles.EL.C];
+            names = {'Repair','Demolition','Collapse'};
+            ccase = '';
+            % Add placeholder is one case is all zeros
+            for k = 1:size(vals,2)
+                if ~any(vals(:,k))
+                    vals(1,k) = 1e-10;
+                end
+                indsrep = vals(:,k)<0 | isnan(vals(:,k));
+                vals(indsrep,k) = 0;
+            end
+        elseif piecat == 2 % Performance group
+            vals = squeeze(sum(handles.compEL,1))';
+            names = handles.compnames';
+            ccase = ', NC';
+            % Add placeholder is one performance group is all zeros
+            for k = 1:size(vals,2)
+                if ~any(vals(:,k))
+                    vals(1,k) = 1e-10;
+                end
+                indsrep = vals(:,k)<0 | isnan(vals(:,k));
+                vals(indsrep,k) = 0;
+            end
+        elseif piecat == 3 % Floor
+            vals = zeros(numel(im),nfloors+1);
+            for i = 1:nedpuniq
+                edp_inds = [handles.uniqedp_vals{i}{:}];
+                edp_inds(edp_inds>1) = 0;
+                if sum(edp_inds) > nfloors
+                    vals = vals + handles.floorEL(edp_inds==1,:)';
+                else
+                    vals = vals + [zeros(size(vals,1),1) handles.floorEL(edp_inds==1,:)'];
+                end
+            end
+            ccase = ', NC';
+            % Add placeholder is one floor is all zeros
+            for k = 1:size(vals,2)
+                if ~any(vals(:,k))
+                    vals(1,k) = 1e-10;
+                end
+                indsrep = vals(:,k)<0 | isnan(vals(:,k));
+                vals(indsrep,k) = 0;
+            end
+            names = sprintfc('Floor %i',0:nfloors);
+        elseif piecat == 4 % EDP
+            vals = zeros(numel(im),nedpuniq);
+            for i = 1:nedpuniq
+                edp_inds = [handles.uniqedp_vals{i}{:}];
+                edp_inds(edp_inds>1) = 0;
+                edp_chosen = sum(handles.floorEL(edp_inds==1,:),1);
+                vals(:,i) = edp_chosen;
+            end
+            names = handles.uniqedp;
+            ccase = ', NC';
+            % Add placeholder is one edp is all zeros
+            for k = 1:size(vals,2)
+                if ~any(vals(:,k))
+                    vals(1,k) = 1e-10;
+                end
+                indsrep = vals(:,k)<0 | isnan(vals(:,k));
+                vals(indsrep,k) = 0;
+            end
+        end
         
         % Plotting pie chart
         if pietype == 2
@@ -2371,9 +2444,45 @@ fig_hdl = handles.mainfigure;
             if isnan(imvalue)
                 error('Need to specify IM value first');
             else
+                pieplot = zeros(1,size(vals,2));
+                for k = 1:size(vals,2)
+                    pieplot(k) = exp(interp1(log(im),log(vals(:,k)),log(imvalue)));
+                    if pieplot(k) == 0
+                        pieplot(k) = 1e-10;
+                    end
+                end
+                % Plotting pie chart for AAL in small axes
+                h = handles.SMALLAXES5;
+                cla(h,'reset');
+                pie(h, pieplot);
+                legend(h, names, 'Location', 'EastOutside', 'Orientation', 'Vertical');
+                title(h, ['E[L_i|IM=' num2str(imvalue) ccase ']']);
+                hp = findobj(h, 'Type', 'patch');
+                for i = 1:numel(hp)
+                    set(hp(end-i+1), 'FaceColor', handles.mycolors(i,:));
+                end
+                set(h,'xtick',[])
+                set(h,'ytick',[])
             end
         else
             % Pie charts for AAL
+            pieplot = zeros(1,size(vals,2));
+            for k = 1:size(vals,2)
+                indsrel = ~isnan(vals(:,k));
+                pieplot(k) = trapz(im(indsrel),vals(indsrel,k));
+            end
+            % Plotting pie chart for AAL in small axes
+            h = handles.SMALLAXES5;
+            cla(h,'reset');
+            pie(h, pieplot);
+            legend(h, names, 'Location', 'EastOutside', 'Orientation', 'Vertical');
+            title(h, ['Avg Anual Loss' ccase]);
+            hp = findobj(h, 'Type', 'patch');
+            for i = 1:numel(hp)
+                set(hp(end-i+1), 'FaceColor', handles.mycolors(i,:));
+            end
+            set(h,'xtick',[])
+            set(h,'ytick',[])
         end
         
         
