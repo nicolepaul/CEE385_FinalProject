@@ -62,8 +62,8 @@ for i = 1:n
 end
 
 % Calculating expected loss for each IM given NC for R
-EL.R = bldgEL;
 P.R = P.NC - P.D;
+EL.R = bldgEL.*P.R;
 
 
 %% Combination
@@ -107,7 +107,8 @@ title('Expected Loss as Percentage of RCN');
 figure;
 plot(im_ofint, [EL.R EL.D EL.C  EL.T].*repmat(pIMdiff,1,4), 'Linewidth', 1.2); grid on;
 legend('R','D','C','T','Location','best');
-xlabel('IM'); ylabel('Deaggregation of Expected Loss');
+xlabel('IM'); ylabel('E[L_i|IM]');
+title('Deaggregation of Expected Loss');
 
 
 %%
